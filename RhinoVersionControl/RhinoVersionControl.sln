@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RhinoVersionControl", "RhinoVersionControl\RhinoVersionControl.csproj", "{F0419AC7-3971-475A-978A-F34D6356922D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RvcCore", "RvcCore\RvcCore.csproj", "{B5175348-FD66-4493-8189-7CF836E581C8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RvcTestApp", "RvcTestApp\RvcTestApp.csproj", "{68FCD364-130E-4763-B0AA-8E3986C23A98}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +13,19 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F0419AC7-3971-475A-978A-F34D6356922D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F0419AC7-3971-475A-978A-F34D6356922D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F0419AC7-3971-475A-978A-F34D6356922D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F0419AC7-3971-475A-978A-F34D6356922D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5175348-FD66-4493-8189-7CF836E581C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5175348-FD66-4493-8189-7CF836E581C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5175348-FD66-4493-8189-7CF836E581C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5175348-FD66-4493-8189-7CF836E581C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68FCD364-130E-4763-B0AA-8E3986C23A98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68FCD364-130E-4763-B0AA-8E3986C23A98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68FCD364-130E-4763-B0AA-8E3986C23A98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68FCD364-130E-4763-B0AA-8E3986C23A98}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {D9D8A6FD-C8A0-46C3-8D93-CC5B532E6032}
+		SolutionGuid = {8DA81D99-1530-4B56-8A26-0BE2CA8F8E59}
 	EndGlobalSection
 EndGlobal
