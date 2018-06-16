@@ -45,11 +45,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RvcDataManagement\DataStore.cs" />
+    <Compile Include="RvcDataManagement\FileState.cs" />
     <Compile Include="Util\TableUtil.cs" />
     <Compile Include="VersionManagement\Addition.cs" />
     <Compile Include="VersionManagement\Change.cs" />
+    <Compile Include="VersionManagement\ChangeSet.cs" />
+    <Compile Include="Entity.cs" />
+    <Compile Include="VersionManagement\IChange.cs" />
+    <Compile Include="VersionManagement\Version.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

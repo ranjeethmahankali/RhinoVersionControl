@@ -26,8 +26,6 @@ namespace RvcTestApp
             {
                 objs = TableUtil.ToList(file.Objects);
                 oldOne = JsonConvert.SerializeObject(objs);
-
-                //file.Objects.First().Com
                 //file.
             }
             Console.WriteLine("Please edit the contents of the file and save it");
