@@ -43,6 +43,23 @@ namespace RvcCore.RvcDataManagement
             throw new NotImplementedException();
             //return result;
         }
+
+        public bool ApplyChange(IChange change)
+        {
+            //incomplete
+            throw new NotImplementedException();
+        }
+
+        public bool RollbackChange(IChange change)
+        {
+            //incomplete
+            throw new NotImplementedException();
+        }
+
+        public T ObjectLookup<T>(Guid id)
+        {
+            return DataStore.ObjectLookup<T>(id);
+        }
         #endregion
     }
 }

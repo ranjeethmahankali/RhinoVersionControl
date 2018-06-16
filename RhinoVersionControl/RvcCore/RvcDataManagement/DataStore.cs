@@ -18,5 +18,13 @@ namespace RvcCore.RvcDataManagement
         public string StoreFileName { get; private set; }
         public string StoreDirectory { get; internal set; }
         #endregion
+
+        #region methods
+        public T ObjectLookup<T>(Guid id)
+        {
+            //incomplete
+            throw new NotImplementedException();
+        }
+        #endregion
     }
 }
