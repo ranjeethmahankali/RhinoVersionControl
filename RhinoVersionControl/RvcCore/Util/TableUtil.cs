@@ -23,8 +23,9 @@ namespace RvcCore.Util
             List<T> list = new List<T>();
             foreach (var obj in table)
             {
-                obj.EnsurePrivateCopy();
-                list.Add(obj);
+                T copy = obj;
+                copy.EnsurePrivateCopy();
+                list.Add(copy);
             }
             return list;
         }

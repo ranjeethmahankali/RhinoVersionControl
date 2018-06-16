@@ -48,6 +48,8 @@
     <Compile Include="Class1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\TableUtil.cs" />
+    <Compile Include="VersionManagement\Addition.cs" />
+    <Compile Include="VersionManagement\Change.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
