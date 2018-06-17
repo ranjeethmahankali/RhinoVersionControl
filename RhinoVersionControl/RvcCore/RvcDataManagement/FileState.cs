@@ -17,32 +17,32 @@ namespace RvcCore.RvcDataManagement
 
         #region properties
         public DataStore DataStore { get; internal set; }
+        public RvcVersion Version { get; set; }
         #endregion
 
         #region methods
         public FileState ApplyChangeSet(ChangeSet changes)
         {
             FileState result = (FileState)Clone();
-            //apply the change set to the result state before returning it
-            //incomplete
-            throw new NotImplementedException();
-            //return result;
-        }
-
-        public override object Clone()
-        {
-            //incomplete
-            throw new NotImplementedException();
+            foreach (var id in changes.ChangesMap.Keys)
+            {
+                result.RollbackChange(changes.ChangesMap[id]);
+            }
+            return result;
         }
 
         public FileState RollbackChangeSet(ChangeSet changes)
         {
             FileState result = (FileState)Clone();
             //apply the change set to the result state before returning it
-            //incomplete
-            throw new NotImplementedException();
-            //return result;
+            foreach(var id in changes.ChangesMap.Keys)
+            {
+                result.ApplyChange(changes.ChangesMap[id]);
+            }
+            return result;
         }
+
+        //private static 
 
         public bool ApplyChange(IChange change)
         {
@@ -59,6 +59,12 @@ namespace RvcCore.RvcDataManagement
         public T ObjectLookup<T>(Guid id)
         {
             return DataStore.ObjectLookup<T>(id);
+        }
+
+        public override object Clone()
+        {
+            //incomplete
+            throw new NotImplementedException();
         }
         #endregion
     }

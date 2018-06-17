@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Rhino.FileIO;
 using Rhino.Runtime;
+using Rhino.DocObjects;
 
 namespace RvcCore.Util
 {
@@ -16,8 +17,8 @@ namespace RvcCore.Util
         /// <typeparam name="T"></typeparam>
         /// <param name="table"></param>
         /// <returns></returns>
-        public static List<T> ToList<T>(IEnumerable<T> table)
-            where T : CommonObject
+        public static List<T> ToList<T>(File3dmCommonComponentTable<T> table)
+            where T : ModelComponent
             //where TableT: IEnumerable<T>
         {
             List<T> list = new List<T>();

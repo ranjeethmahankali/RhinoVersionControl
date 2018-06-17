@@ -10,6 +10,7 @@ namespace RvcCore.VersionManagement
 {
     public enum ChangeType
     {
+        None,
         Addition,
         Deletion,
         Modification
@@ -18,7 +19,6 @@ namespace RvcCore.VersionManagement
     public interface IChange : IEntity
     {
         Type ObjectType { get; }
-        Type CollectionType { get; }
         ChangeType Type { get; }
     }
 
@@ -26,85 +26,76 @@ namespace RvcCore.VersionManagement
     /// This class represents a single change made to a collection of objects being tracked. This is the base class for all types of changes.
     /// </summary>
     /// <typeparam name="SetT">The type of the collection that is being tracked by this change</typeparam>
-    public abstract class Change<T, SetT>: Entity, IChange
-        where SetT: File3dmCommonComponentTable<T>
+    public abstract class Change<T>: Entity, IChange
         where T: ModelComponent
     {
         #region fields
-        private Func<SetT, SetT> _applyChangeLambda, _rollbackChangeLambda;
-        private Guid _cachedObjGuid = Guid.Empty;
+        //if this change type happens to be a modification, then the below two objects will store the initial and final versions of the modification
+        private Guid _modifiedInitialVersion = Guid.Empty;
+        private Guid _modifiedFinalVersion = Guid.Empty;
         #endregion
 
         #region properties
         public Type ObjectType { get => typeof(T); }
-        public Type CollectionType { get => typeof(SetT); }
         public ChangeSet ContainingSet { get; internal set; }
         public Guid AffectedObjectGuid { get; private set; }
         public ChangeType Type { get; internal set; }
         /// <summary>
-        /// If the change type is modification, this object will contain the replacement
+        /// If the change type is modification, this object will contain the initial version of the modification
         /// </summary>
-        public Guid CachedObjectGuid
+        public Guid ModificationInitialVersion
         {
             get
             {
-                if(_cachedObjGuid == Guid.Empty)
+                if(_modifiedInitialVersion == Guid.Empty)
                 {
                     return AffectedObjectGuid;
                 }
-                return _cachedObjGuid;
+                return _modifiedInitialVersion;
+            }
+        }
+        /// <summary>
+        /// If the change type is a modification, this will contain the final version of the modification
+        /// </summary>
+        public Guid ModificationFinalVersion
+        {
+            get
+            {
+                if (_modifiedFinalVersion == Guid.Empty)
+                {
+                    return AffectedObjectGuid;
+                }
+                return _modifiedFinalVersion;
             }
         }
         //public Version VersionBefore { get => ContainingSet.VersionBefore; }
         #endregion
 
         #region constructors
-        private Change(Version version, Guid changedGuid, Func<SetT, SetT> applyChange, Func<SetT, SetT> rollbackChange)
+        private Change(RvcVersion version, Guid changedGuid)
         {
-            _applyChangeLambda = applyChange;
-            _rollbackChangeLambda = rollbackChange;
             AffectedObjectGuid = changedGuid;
         }
         #endregion
 
         #region methods
-        public virtual SetT ApplyTo(SetT set)
-        {
-            if(_applyChangeLambda == null)
-            {
-                return set;
-            }
-            return _applyChangeLambda.Invoke(set);
-        }
-
-        public virtual SetT RollbackFrom(SetT set)
-        {
-            if(_rollbackChangeLambda == null)
-            {
-                return set;
-            }
-            return _rollbackChangeLambda.Invoke(set);
-        }
-
         //static constructors
-        public static Change<Q, SetQ> CreateAddition<Q, SetQ>(Version affectedVersion, Guid addedObjGuid)
-            where SetQ : File3dmCommonComponentTable<Q>
+        public static Change<Q> CreateAddition<Q>(RvcVersion affectedVersion, Guid addedObjGuid)
             where Q : ModelComponent
         {
             //incomplete
             throw new NotImplementedException();
         }
 
-        public static Change<Q, SetQ> CreateDeletion<Q, SetQ>(Version affectedVersion, Guid deletedObjGuid)
-            where SetQ : File3dmCommonComponentTable<Q>
+        public static Change<Q> CreateDeletion<Q>(RvcVersion affectedVersion, Guid deletedObjGuid)
             where Q : ModelComponent
         {
             //incomplete
             throw new NotImplementedException();
         }
 
-        public static Change<Q, SetQ> CreateModification<Q, SetQ>(Version affectedVersion, Guid originalObjGuid, Guid modifiedObjGuid)
-            where SetQ : File3dmCommonComponentTable<Q>
+        public static Change<Q> CreateModification<Q>(RvcVersion affectedVersion, Guid affectedObject, Guid initialVersion,
+            Guid finalVersion)
             where Q : ModelComponent
         {
             //incomplete

@@ -8,7 +8,7 @@ using RvcCore.RvcDataManagement;
 
 namespace RvcCore.VersionManagement
 {
-    public class Version: Entity
+    public class RvcVersion: Entity, IEquatable<RvcVersion>
     {
         #region fields
         private FileState _state = null;
@@ -31,9 +31,10 @@ namespace RvcCore.VersionManagement
         #endregion
 
         #region constructors
-        private Version()
+        private RvcVersion()
         {
             DownstreamChangeSets = new Dictionary<Guid, ChangeSet>();
+            Id = Guid.NewGuid();
         }
         #endregion
 
@@ -70,10 +71,16 @@ namespace RvcCore.VersionManagement
             FileState state;
             FileState prevState = 
             state = UpstreamChangeSet.VersionBefore.State.ApplyChangeSet(UpstreamChangeSet);
+            state.Version = this;
             return state;
         }
 
         public override object Clone()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Equals(RvcVersion other)
         {
             throw new NotImplementedException();
         }
