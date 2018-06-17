@@ -36,7 +36,7 @@ namespace RvcCore.RvcDataManagement
             }
         }
         public FileState State { get; set; }
-        public DataStore DataStore { get => State.DataStore; }
+        public DataStore DataStore { get => State.Store; }
         #endregion
 
         #region constructors

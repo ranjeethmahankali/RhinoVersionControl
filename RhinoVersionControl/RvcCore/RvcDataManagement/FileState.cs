@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using RvcCore.VersionManagement;
+using Rhino.DocObjects;
 
 namespace RvcCore.RvcDataManagement
 {
@@ -16,7 +17,7 @@ namespace RvcCore.RvcDataManagement
         #endregion
 
         #region properties
-        public DataStore DataStore { get; internal set; }
+        public DataStore Store { get; internal set; }
         public RvcVersion Version { get; set; }
         #endregion
 
@@ -42,8 +43,6 @@ namespace RvcCore.RvcDataManagement
             return result;
         }
 
-        //private static 
-
         public bool ApplyChange(IChange change)
         {
             //incomplete
@@ -57,11 +56,18 @@ namespace RvcCore.RvcDataManagement
         }
 
         public T ObjectLookup<T>(Guid id)
+            where T : ModelComponent
         {
-            return DataStore.ObjectLookup<T>(id);
+            return Store.ObjectLookup<T>(id);
         }
 
         public override object Clone()
+        {
+            //incomplete
+            throw new NotImplementedException();
+        }
+
+        public static ChangeSet EvaluateDiff(FileState state1, FileState state2)
         {
             //incomplete
             throw new NotImplementedException();

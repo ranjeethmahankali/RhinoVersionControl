@@ -38,6 +38,16 @@ namespace RvcCore.VersionManagement
             }
         }
 
+        public static ChangeSet Merge(ChangeSet set1, ChangeSet set2)
+        {
+            ChangeSet merged = (ChangeSet)set1.Clone();
+            foreach(IChange change in set2.ChangesMap.Values)
+            {
+                merged.AddChange(change);
+            }
+            return merged;
+        }
+
         public override object Clone()
         {
             throw new NotImplementedException();
