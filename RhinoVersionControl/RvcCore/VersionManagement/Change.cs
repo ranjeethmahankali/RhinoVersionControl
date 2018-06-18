@@ -20,13 +20,16 @@ namespace RvcCore.VersionManagement
     {
         Type ObjectType { get; }
         ChangeType Type { get; }
+        Guid ModificationInitialVersion { get; }
+        Guid ModificationFinalVersion { get; }
+        ChangeSet ContainingSet { get; set; }
     }
 
     /// <summary>
     /// This class represents a single change made to a collection of objects being tracked. This is the base class for all types of changes.
     /// </summary>
     /// <typeparam name="SetT">The type of the collection that is being tracked by this change</typeparam>
-    public abstract class Change<T>: Entity, IChange
+    public class Change<T>: Entity, IChange
         where T: ModelComponent
     {
         #region fields
@@ -37,7 +40,7 @@ namespace RvcCore.VersionManagement
 
         #region properties
         public Type ObjectType { get => typeof(T); }
-        public ChangeSet ContainingSet { get; internal set; }
+        public ChangeSet ContainingSet { get; set; }
         public Guid AffectedObjectGuid { get; private set; }
         public ChangeType Type { get; internal set; }
         /// <summary>
@@ -53,6 +56,7 @@ namespace RvcCore.VersionManagement
                 }
                 return _modifiedInitialVersion;
             }
+            set { _modifiedInitialVersion = value; }
         }
         /// <summary>
         /// If the change type is a modification, this will contain the final version of the modification
@@ -67,12 +71,13 @@ namespace RvcCore.VersionManagement
                 }
                 return _modifiedFinalVersion;
             }
+            set { _modifiedFinalVersion = value; }
         }
         //public Version VersionBefore { get => ContainingSet.VersionBefore; }
         #endregion
 
         #region constructors
-        private Change(RvcVersion version, Guid changedGuid)
+        private Change(Guid changedGuid)
         {
             AffectedObjectGuid = changedGuid;
         }
@@ -80,26 +85,40 @@ namespace RvcCore.VersionManagement
 
         #region methods
         //static constructors
-        public static Change<Q> CreateAddition<Q>(RvcVersion affectedVersion, Guid addedObjGuid)
+        public static Change<Q> CreateAddition<Q>(Guid addedObjGuid)
             where Q : ModelComponent
         {
-            //incomplete
-            throw new NotImplementedException();
+            Change<Q> change = new Change<Q>(addedObjGuid);
+            change.Type = ChangeType.Addition;
+            return change;
         }
 
-        public static Change<Q> CreateDeletion<Q>(RvcVersion affectedVersion, Guid deletedObjGuid)
+        public static Change<Q> CreateDeletion<Q>(Guid deletedObjGuid)
             where Q : ModelComponent
         {
-            //incomplete
-            throw new NotImplementedException();
+            Change<Q> change = new Change<Q>(deletedObjGuid);
+            change.Type = ChangeType.Deletion;
+            return change;
         }
 
-        public static Change<Q> CreateModification<Q>(RvcVersion affectedVersion, Guid affectedObject, Guid initialVersion,
+        public static Change<Q> CreateModification<Q>(Guid affectedObject, Guid initialVersion,
             Guid finalVersion)
             where Q : ModelComponent
         {
-            //incomplete
-            throw new NotImplementedException();
+            Change<Q> change = new Change<Q>(affectedObject);
+            change.Type = ChangeType.Modification;
+            change.ModificationInitialVersion = initialVersion;
+            change.ModificationFinalVersion = finalVersion;
+            return change;
+        }
+
+        public override object Clone()
+        {
+            Change<T> clone = new Change<T>(AffectedObjectGuid);
+            clone.ModificationInitialVersion = ModificationInitialVersion;
+            clone.ModificationFinalVersion = ModificationFinalVersion;
+            clone.Type = Type;
+            return clone;
         }
         #endregion
     }

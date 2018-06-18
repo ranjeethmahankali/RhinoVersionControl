@@ -11,7 +11,7 @@ using RvcCore.VersionManagement;
 
 namespace RvcCore.RvcDataManagement
 {
-    public interface IFileDataTable
+    public interface IFileDataTable: ICloneable
     {
         HashSet<Guid> Objects { get; }
         FileState State { get; set; }
@@ -59,12 +59,15 @@ namespace RvcCore.RvcDataManagement
         {
             _objects = new HashSet<Guid>();
         }
-        public FileDataTable(FileState state, File3dmCommonComponentTable<T> rhTable, string name)
+        public FileDataTable(FileState state, string name)
+        {
+            State = state;
+            Name = name;
+        }
+        public FileDataTable(FileState state, File3dmCommonComponentTable<T> rhTable, string name): this(state, name)
         {
             List<T> comps = TableUtil.ToList(rhTable);
             _objects = new HashSet<Guid>(comps.Select((mc) => mc.Id));
-            Name = name;
-            State = state;
         }
         #endregion
 
@@ -89,7 +92,17 @@ namespace RvcCore.RvcDataManagement
             if (!hasAlias) { alias = id; }
             return hasAlias;
         }
-
+        public void AddObjectAlias(Guid id, Guid alias)
+        {
+            if (_aliases.ContainsKey(id))
+            {
+                _aliases[id] = alias;
+            }
+            else
+            {
+                _aliases.Add(id, alias);
+            }
+        }
         public FileDataTable<Q> AsTableInstance<Q>() where Q: ModelComponent
         {
             if(typeof(T) == typeof(Q)) { return this as FileDataTable<Q>; }
@@ -183,6 +196,20 @@ namespace RvcCore.RvcDataManagement
             }
 
             return changeSet;
+        }
+
+        public object Clone()
+        {
+            FileDataTable<T> clone = new FileDataTable<T>(State, Name);
+            foreach(var id in _objects)
+            {
+                clone.Objects.Add(id);
+            }
+            foreach(var key in _aliases.Keys)
+            {
+                clone.AddObjectAlias(key, _aliases[key]);
+            }
+            return clone;
         }
         #endregion
     }

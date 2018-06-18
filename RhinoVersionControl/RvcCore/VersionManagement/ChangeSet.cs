@@ -36,6 +36,7 @@ namespace RvcCore.VersionManagement
             {
                 _changeDict.Add(change.Id, change);
             }
+            change.ContainingSet = this;
         }
 
         public static ChangeSet Merge(ChangeSet set1, ChangeSet set2)
@@ -50,7 +51,14 @@ namespace RvcCore.VersionManagement
 
         public override object Clone()
         {
-            throw new NotImplementedException();
+            ChangeSet clone = new ChangeSet();
+            foreach(var change in ChangesMap.Values)
+            {
+                clone.AddChange((IChange)change.Clone());
+            }
+            clone.VersionAfter = VersionAfter;
+            clone.VersionBefore = VersionBefore;
+            return clone;
         }
         #endregion
     }

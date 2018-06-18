@@ -72,8 +72,14 @@ namespace RvcCore.RvcDataManagement
 
         public override object Clone()
         {
-            //incomplete
-            throw new NotImplementedException();
+            FileState clone = new FileState();
+            foreach(var table in Tables)
+            {
+                clone.Tables.Add((IFileDataTable)table.Clone());
+            }
+            clone.Store = Store;
+            clone.Version = Version;
+            return clone;
         }
 
         public IFileDataTable GetMatchingTable(IFileDataTable table)
