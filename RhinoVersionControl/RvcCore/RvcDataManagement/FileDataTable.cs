@@ -11,10 +11,23 @@ using RvcCore.VersionManagement;
 
 namespace RvcCore.RvcDataManagement
 {
+    public interface IFileDataTable
+    {
+        HashSet<Guid> Objects { get; }
+        FileState State { get; set; }
+        DataStore Store { get; }
+        ModelComponent GetModelComponent(Guid id, bool getOriginalVersion = false);
+        bool ObjectHasAlias(Guid id, out Guid alias);
+        FileDataTable<T> AsTableInstance<T>() where T: ModelComponent;
+        ChangeSet EvaluateDiff(IFileDataTable table);
+        Type MemberType { get; }
+        string Name { get; set; }
+    }
     /// <summary>
     /// A FileState is a collection of tables imported from the 3dm file. This is the class that represents the individual tables in the file
     /// </summary>
-    public class FileDataTable<T> where T: ModelComponent
+    public class FileDataTable<T>: IFileDataTable
+        where T: ModelComponent
     {
         #region fields
         private HashSet<Guid> _objects = null;
@@ -36,7 +49,9 @@ namespace RvcCore.RvcDataManagement
             }
         }
         public FileState State { get; set; }
-        public DataStore DataStore { get => State.Store; }
+        public DataStore Store { get => State.Store; }
+        public Type MemberType { get => typeof(T); }
+        public string Name { get; set; }
         #endregion
 
         #region constructors
@@ -44,15 +59,20 @@ namespace RvcCore.RvcDataManagement
         {
             _objects = new HashSet<Guid>();
         }
-        public FileDataTable(FileState state, File3dmCommonComponentTable<T> rhTable)
+        public FileDataTable(FileState state, File3dmCommonComponentTable<T> rhTable, string name)
         {
             List<T> comps = TableUtil.ToList(rhTable);
             _objects = new HashSet<Guid>(comps.Select((mc) => mc.Id));
+            Name = name;
             State = state;
         }
         #endregion
 
         #region methods
+        public ModelComponent GetModelComponent(Guid id, bool getOriginalversion = false)
+        {
+            return GetObject(id, getOriginalversion);
+        }
         public T GetObject(Guid id, bool getOriginalVersion = false)
         {
             if (!_objects.Contains(id)) { return null; }
@@ -61,13 +81,37 @@ namespace RvcCore.RvcDataManagement
             {
                 objId = id;
             }
-            return DataStore.ObjectLookup<T>(objId);
+            return Store.ObjectLookup<T>(objId);
         }
-        private bool ObjectHasAlias(Guid id, out Guid alias)
+        public bool ObjectHasAlias(Guid id, out Guid alias)
         {
             var hasAlias = _aliases.TryGetValue(id, out alias);
             if (!hasAlias) { alias = id; }
             return hasAlias;
+        }
+
+        public FileDataTable<Q> AsTableInstance<Q>() where Q: ModelComponent
+        {
+            if(typeof(T) == typeof(Q)) { return this as FileDataTable<Q>; }
+            else { return null; }
+        }
+
+        public static ChangeSet EvaluateDiff(IFileDataTable table1, IFileDataTable table2)
+        {
+            var memberType1 = table1.MemberType;
+            var memberType2 = table2.MemberType;
+            if(table1.GetType().GetGenericTypeDefinition() != typeof(FileDataTable<>) || 
+                table2.GetType().GetGenericTypeDefinition() != typeof(FileDataTable<>) || memberType1 != memberType2 ||
+                typeof(T) != memberType1)
+            {
+                throw new InvalidOperationException("Diff operation cannot be performed on tables of these types");
+            }
+            return EvaluateDiff(table1.AsTableInstance<T>(), table2.AsTableInstance<T>());
+        }
+
+        public ChangeSet EvaluateDiff(IFileDataTable table2)
+        {
+            return EvaluateDiff(this, table2);
         }
 
         /// <summary>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 using RvcCore.VersionManagement;
 using Rhino.DocObjects;
 
@@ -14,11 +15,19 @@ namespace RvcCore.RvcDataManagement
     public class FileState: Entity
     {
         #region fields
+        public HashSet<IFileDataTable> Tables { get; }
         #endregion
 
         #region properties
         public DataStore Store { get; internal set; }
         public RvcVersion Version { get; set; }
+        #endregion
+
+        #region constructors
+        private FileState()
+        {
+            Tables = new HashSet<IFileDataTable>();
+        }
         #endregion
 
         #region methods
@@ -67,10 +76,32 @@ namespace RvcCore.RvcDataManagement
             throw new NotImplementedException();
         }
 
+        public IFileDataTable GetMatchingTable(IFileDataTable table)
+        {
+            foreach(var t in Tables)
+            {
+                if(t.MemberType == table.MemberType && table.Name == t.Name)
+                {
+                    return t;
+                }
+            }
+            return null;
+        }
+
         public static ChangeSet EvaluateDiff(FileState state1, FileState state2)
         {
-            //incomplete
-            throw new NotImplementedException();
+            ChangeSet changeSet = new ChangeSet();
+            foreach(var table1 in state1.Tables)
+            {
+                Type memberType = table1.MemberType;
+                var table2 = state2.GetMatchingTable(table1);
+                if(table2 == null)
+                {
+                    throw new InvalidDataException("Could not find a matching table. Aborting the diff operation.");
+                }
+                changeSet = ChangeSet.Merge(changeSet, table1.EvaluateDiff(table2));
+            }
+            return changeSet;
         }
         #endregion
     }
