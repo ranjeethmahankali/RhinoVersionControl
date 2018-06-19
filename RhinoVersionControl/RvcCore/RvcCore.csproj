@@ -49,6 +49,8 @@
     <Compile Include="RvcDataManagement\DataStore.cs" />
     <Compile Include="RvcDataManagement\FileDataTable.cs" />
     <Compile Include="RvcDataManagement\FileState.cs" />
+    <Compile Include="RvcRhinoFileTether.cs" />
+    <Compile Include="Util\FileUtil.cs" />
     <Compile Include="Util\TableUtil.cs" />
     <Compile Include="VersionManagement\Change.cs" />
     <Compile Include="VersionManagement\ChangeSet.cs" />
