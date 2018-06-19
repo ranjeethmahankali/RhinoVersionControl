@@ -54,14 +54,16 @@ namespace RvcCore.RvcDataManagement
 
         public bool ApplyChange(IChange change)
         {
-            //incomplete
-            throw new NotImplementedException();
+            IFileDataTable matchingTable = GetMatchingTable(change.ObjectType);
+            if(matchingTable == null) { return false; }
+            return matchingTable.ApplyChange(change);
         }
 
         public bool RollbackChange(IChange change)
         {
-            //incomplete
-            throw new NotImplementedException();
+            IFileDataTable matchingTable = GetMatchingTable(change.ObjectType);
+            if (matchingTable == null) { return false; }
+            return matchingTable.RollbackChange(change);
         }
 
         public T ObjectLookup<T>(Guid id)
@@ -84,14 +86,20 @@ namespace RvcCore.RvcDataManagement
 
         public IFileDataTable GetMatchingTable(IFileDataTable table)
         {
-            foreach(var t in Tables)
+            return GetMatchingTable(table.MemberType, table.Name);
+        }
+        public IFileDataTable GetMatchingTable(Type memberType, string name = null)
+        {
+            List<IFileDataTable> matches = new List<IFileDataTable>();
+            foreach (var t in Tables)
             {
-                if(t.MemberType == table.MemberType && table.Name == t.Name)
-                {
-                    return t;
-                }
+                if (t.MemberType == memberType) { matches.Add(t); }
+                if(name != null && t.Name == name) { return matches.Last(); }
             }
-            return null;
+
+            var preferredMatches = matches.Where((t) => t.Name.Contains("All")).ToList();
+            if(preferredMatches.Count > 0) { return preferredMatches.FirstOrDefault(); }
+            else { return matches.FirstOrDefault(); }
         }
 
         public static ChangeSet EvaluateDiff(FileState state1, FileState state2)

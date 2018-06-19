@@ -23,6 +23,8 @@ namespace RvcCore.VersionManagement
         Guid ModificationInitialVersion { get; }
         Guid ModificationFinalVersion { get; }
         ChangeSet ContainingSet { get; set; }
+        Guid AffectedObjectGuid { get; set; }
+        //Guid AffectedObjectAliasId { get; set; }
     }
 
     /// <summary>
@@ -41,7 +43,8 @@ namespace RvcCore.VersionManagement
         #region properties
         public Type ObjectType { get => typeof(T); }
         public ChangeSet ContainingSet { get; set; }
-        public Guid AffectedObjectGuid { get; private set; }
+        public Guid AffectedObjectGuid { get; set; }
+        //public Guid AffectedObjectAliasId { get; set; }
         public ChangeType Type { get; internal set; }
         /// <summary>
         /// If the change type is modification, this object will contain the initial version of the modification

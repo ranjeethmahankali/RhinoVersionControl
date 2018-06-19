@@ -22,6 +22,8 @@ namespace RvcCore.RvcDataManagement
         ChangeSet EvaluateDiff(IFileDataTable table);
         Type MemberType { get; }
         string Name { get; set; }
+        bool ApplyChange(IChange change);
+        bool RollbackChange(IChange change);
     }
     /// <summary>
     /// A FileState is a collection of tables imported from the 3dm file. This is the class that represents the individual tables in the file
@@ -103,6 +105,28 @@ namespace RvcCore.RvcDataManagement
                 _aliases.Add(id, alias);
             }
         }
+
+        public bool Contains(Guid id)
+        {
+            return Objects.Contains(id);
+        }
+        public bool Delete(Guid id)
+        {
+            if (Contains(id)) { Objects.Remove(id); }
+            else { return false; }
+            if (_aliases.ContainsKey(id)) { _aliases.Remove(id); }
+            return true;
+        }
+        public void Add(Guid id)
+        {
+            Objects.Add(id);
+        }
+        public void Add(Guid id, Guid alias)
+        {
+            Objects.Add(id);
+            AddObjectAlias(id, alias);
+        }
+
         public FileDataTable<Q> AsTableInstance<Q>() where Q: ModelComponent
         {
             if(typeof(T) == typeof(Q)) { return this as FileDataTable<Q>; }
@@ -182,15 +206,15 @@ namespace RvcCore.RvcDataManagement
                 Change<T> change = null;
                 if(changeType == ChangeType.Addition)
                 {
-                    change = Change<T>.CreateAddition<T>(t1.State.Version, id);
+                    change = Change<T>.CreateAddition<T>(id);
                 }
                 else if(changeType == ChangeType.Deletion)
                 {
-                    change = Change<T>.CreateDeletion<T>(t1.State.Version, id);
+                    change = Change<T>.CreateDeletion<T>(id);
                 }
                 else if(changeType == ChangeType.Modification)
                 {
-                    change = Change<T>.CreateModification<T>(t1.State.Version, id, aliasMap1[id], aliasMap2[id]);
+                    change = Change<T>.CreateModification<T>(id, aliasMap1[id], aliasMap2[id]);
                 }
                 if (change != null) { changeSet.AddChange(change); }
             }
@@ -210,6 +234,49 @@ namespace RvcCore.RvcDataManagement
                 clone.AddObjectAlias(key, _aliases[key]);
             }
             return clone;
+        }
+
+        public bool ApplyChange(IChange change)
+        {
+            if(MemberType != change.ObjectType) { return false; }
+
+            if(change.Type == ChangeType.Addition)
+            {
+                Add(change.AffectedObjectGuid);
+                return true;
+            }
+            if (change.Type == ChangeType.Deletion)
+            {
+                return Delete(change.AffectedObjectGuid);
+            }
+            if (Contains(change.AffectedObjectGuid) && change.Type == ChangeType.Modification)
+            {
+                AddObjectAlias(change.AffectedObjectGuid, change.ModificationFinalVersion);
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool RollbackChange(IChange change)
+        {
+            if (MemberType != change.ObjectType) { return false; }
+
+            if (change.Type == ChangeType.Addition)
+            {
+                return Delete(change.AffectedObjectGuid);
+            }
+            if (change.Type == ChangeType.Deletion)
+            {
+                Add(change.AffectedObjectGuid);
+                return true;
+            }
+            if (Contains(change.AffectedObjectGuid) && change.Type == ChangeType.Modification)
+            {
+                AddObjectAlias(change.AffectedObjectGuid, change.ModificationInitialVersion);
+                return true;
+            }
+            return false;
         }
         #endregion
     }
