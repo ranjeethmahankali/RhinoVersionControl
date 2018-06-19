@@ -18,6 +18,7 @@ namespace RvcCore.RvcDataManagement
     {
         #region fields
         private File3dm _storeFile = null;
+        private static string storeFileExtension = ".rvcstore";
         #endregion
 
         #region properties
@@ -33,7 +34,7 @@ namespace RvcCore.RvcDataManagement
         {
             TablePropInfos = typeof(File3dm).GetProperties().Where((t) => IsTableType(t.PropertyType)).ToList();
         }
-        public DataStore(string rhinoFilePath, Action<string> storeFileNameSetter, string storeFileName = null)
+        public DataStore(string rhinoFilePath, Action<string> storeFileNameSetter, Guid rvcTetherId)
         {
             string rhDir = Path.GetDirectoryName(rhinoFilePath);
             string rvcDirPath = Path.Combine(rhDir, ".rvc");
@@ -43,12 +44,26 @@ namespace RvcCore.RvcDataManagement
                 DirectoryInfo di = Directory.CreateDirectory(rvcDirPath);
                 di.Attributes = FileAttributes.Directory | FileAttributes.Hidden;
             }
+            string archivePath = Path.Combine(rvcDirPath, rvcTetherId.ToString());
+            if (!Directory.Exists(archivePath))
+            {
+                DirectoryInfo di = Directory.CreateDirectory(archivePath);
+            }
 
-            StoreFileName = storeFileName ?? (Guid.NewGuid().ToString() + ".rvcstore");
+            StoreDirectory = archivePath;
+            StoreFileName = rvcTetherId.ToString() + storeFileExtension;
             storeFileNameSetter.Invoke(StoreFileName);
 
             _storeFile?.Dispose();
-            _storeFile = File3dm.Read(StoreFilePath);
+            if (File.Exists(StoreFilePath))
+            {
+                _storeFile = File3dm.Read(StoreFilePath);
+            }
+            else
+            {
+                _storeFile = new File3dm();
+                _storeFile.Write(StoreFilePath, 0);
+            }
         }
         #endregion
 
