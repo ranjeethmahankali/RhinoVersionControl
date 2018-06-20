@@ -55,7 +55,7 @@
     <Compile Include="VersionManagement\Change.cs" />
     <Compile Include="VersionManagement\ChangeSet.cs" />
     <Compile Include="Entity.cs" />
-    <Compile Include="VersionManagement\Version.cs" />
+    <Compile Include="VersionManagement\RvcVersion.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

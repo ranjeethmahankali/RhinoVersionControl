@@ -8,6 +8,7 @@ using System.IO;
 
 using Rhino.FileIO;
 using Rhino.DocObjects;
+using RvcCore.Util;
 
 namespace RvcCore.RvcDataManagement
 {
@@ -32,9 +33,9 @@ namespace RvcCore.RvcDataManagement
         #region constructors
         static DataStore()
         {
-            TablePropInfos = typeof(File3dm).GetProperties().Where((t) => IsTableType(t.PropertyType)).ToList();
+            TablePropInfos = typeof(File3dm).GetProperties().Where((t) => TableUtil.IsFile3dmTableType(t.PropertyType)).ToList();
         }
-        public DataStore(string rhinoFilePath, Action<string> storeFileNameSetter, Guid rvcTetherId)
+        public DataStore(string rhinoFilePath, Guid rvcTetherId)
         {
             string rhDir = Path.GetDirectoryName(rhinoFilePath);
             string rvcDirPath = Path.Combine(rhDir, ".rvc");
@@ -52,7 +53,6 @@ namespace RvcCore.RvcDataManagement
 
             StoreDirectory = archivePath;
             StoreFileName = rvcTetherId.ToString() + storeFileExtension;
-            storeFileNameSetter.Invoke(StoreFileName);
 
             _storeFile?.Dispose();
             if (File.Exists(StoreFilePath))
@@ -85,11 +85,6 @@ namespace RvcCore.RvcDataManagement
         public void Dispose()
         {
             _storeFile.Dispose();
-        }
-
-        public static bool IsTableType(Type type)
-        {
-            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(File3dmCommonComponentTable<>);
         }
         #endregion
     }

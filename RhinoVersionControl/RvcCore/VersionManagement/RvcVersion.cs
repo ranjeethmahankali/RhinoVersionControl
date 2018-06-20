@@ -12,6 +12,7 @@ namespace RvcCore.VersionManagement
     {
         #region fields
         private FileState _state = null;
+        private static Dictionary<Guid, RvcVersion> _versionDict = new Dictionary<Guid, RvcVersion>();
         #endregion
 
         #region properties
@@ -83,6 +84,15 @@ namespace RvcCore.VersionManagement
         public bool Equals(RvcVersion other)
         {
             throw new NotImplementedException();
+        }
+        public static RvcVersion GetVersionById(Guid id)
+        {
+            RvcVersion version;
+            if(!_versionDict.TryGetValue(id, out version))
+            {
+                version = null;
+            }
+            return version;
         }
         #endregion
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Collections;
 using System.Text;
 using System.Threading.Tasks;
 using Rhino.FileIO;
@@ -34,6 +35,7 @@ namespace RvcTestApp
             {
                 newObjs = TableUtil.ToList(file.Objects);
                 newOne = JsonConvert.SerializeObject(newObjs);
+                var tables = FileUtil.GetAllTables(file);
             }
 
             objs = JsonConvert.DeserializeObject<List<File3dmObject>>(oldOne, new JsonSerializerSettings {
