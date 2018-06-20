@@ -2,7 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Reflection;
 using System.Threading.Tasks;
+
+using Rhino.FileIO;
+using Rhino.DocObjects;
 
 namespace RvcCore.VersionManagement
 {
@@ -61,8 +65,43 @@ namespace RvcCore.VersionManagement
             return clone;
         }
 
+        /// <summary>
+        /// Generic method to create a change and add it to the set.
+        /// </summary>
+        /// <param name="type">Type of change</param>
+        /// <param name="objType">The type of the object affected by this change</param>
+        /// <param name="guidParams">relevant guids in this order: the affected object id, if object is modified, guid if the initial version and 
+        /// guid if the final version</param>
         public void AddChange(ChangeType type, Type objType, params Guid[] guidParams)
         {
+            if (!typeof(ModelComponent).IsAssignableFrom(objType))
+            {
+                throw new InvalidOperationException("Invalid object type. It must be a subtype of ModelComponent");
+            }
+            if(guidParams.Length == 0) { throw new InvalidOperationException("Too few guid parameters provided"); }
+
+            IChange change = null;
+            if(type == ChangeType.Addition)
+            {
+                MethodInfo generic = typeof(Change<>).GetMethod("CreateAddition");
+                MethodInfo method = generic.MakeGenericMethod(objType);
+                change = (IChange)method.Invoke(null, new object[] { guidParams[0] });
+            }
+            else if(type == ChangeType.Deletion)
+            {
+                MethodInfo generic = typeof(Change<>).GetMethod("CreateDeletion");
+                MethodInfo method = generic.MakeGenericMethod(objType);
+                change = (IChange)method.Invoke(null, new object[] { guidParams[0] });
+            }
+            else if(type == ChangeType.Modification)
+            {
+                if(guidParams.Length < 3) { throw new InvalidOperationException("Too few guids for a change type 'modification'."); }
+                MethodInfo generic = typeof(Change<>).GetMethod("CreateModification");
+                MethodInfo method = generic.MakeGenericMethod(objType);
+                change = (IChange)method.Invoke(null, new object[] { guidParams[0], guidParams[1], guidParams[2] });
+            }
+
+            if(change != null) { AddChange(change); }
             //incomplete
             throw new NotImplementedException();
         }

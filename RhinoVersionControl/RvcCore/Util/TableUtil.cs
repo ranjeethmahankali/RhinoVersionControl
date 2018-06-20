@@ -34,10 +34,13 @@ namespace RvcCore.Util
             return list;
         }
 
-        public static IFileDataTable ParseTableData(IEnumerable tableData, Type dataType, RvcVersion version, ref DataStore store)
+        public static IFileDataTable ParseTableData(IEnumerable tableData, string tableName, Type dataType, RvcVersion version, ref DataStore store)
         {
             IFileDataTable table = CreateTableInstance(dataType);
+            table.Name = tableName;
 
+            IFileDataTable refTable = version.State.GetMatchingTable(table);
+            //if = 
             //incomplete
             throw new NotImplementedException();
         }
@@ -64,7 +67,14 @@ namespace RvcCore.Util
                 if (table.Contains(comp.Id))
                 {
                     ModelComponent old = store.ObjectLookup(comp.Id, comp.GetType());
-                    //if(old == null) { }
+                    if(old == null)
+                    {
+                        //create addition change
+                    }
+                    else
+                    {
+                        //ModelComponent newOne = table.GetModelComponent(comp.Id);
+                    }
                 }
             }
             //incomplete

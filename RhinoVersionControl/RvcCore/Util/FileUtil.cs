@@ -39,7 +39,7 @@ namespace RvcCore.Util
             {
                 List<Type> memberTypes;
                 List<string> tableNames;
-                List<IEnumerable> tables = GetAllTables(file, out memberTypes, out tableNames);
+                List<IEnumerable> tables3dm = GetAllTables(file, out memberTypes, out tableNames);
                 //incomplete
             }
             //incomplete
