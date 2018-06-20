@@ -25,6 +25,8 @@ namespace RvcCore.RvcDataManagement
         string Name { get; set; }
         bool ApplyChange(IChange change);
         bool RollbackChange(IChange change);
+        IFileDataTable ApplyChangeSet(ChangeSet changes);
+        IFileDataTable RollbackChangeSet(ChangeSet changes);
         bool Contains(Guid id);
         bool Delete(Guid id);
         void Add(Guid id);
@@ -282,6 +284,26 @@ namespace RvcCore.RvcDataManagement
                 return true;
             }
             return false;
+        }
+
+        public IFileDataTable ApplyChangeSet(ChangeSet changes)
+        {
+            IFileDataTable copy = (IFileDataTable)Clone();
+            foreach(var key in changes.ChangesMap.Keys)
+            {
+                copy.ApplyChange(changes.ChangesMap[key]);
+            }
+            return copy;
+        }
+
+        public IFileDataTable RollbackChangeSet(ChangeSet changes)
+        {
+            IFileDataTable copy = (IFileDataTable)Clone();
+            foreach (var key in changes.ChangesMap.Keys)
+            {
+                copy.RollbackChange(changes.ChangesMap[key]);
+            }
+            return copy;
         }
         #endregion
     }

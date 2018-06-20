@@ -62,6 +62,17 @@ namespace RvcCore.VersionManagement
             }
         }
 
+        public RvcVersion AddDownStreamVersion(ChangeSet changes)
+        {
+            RvcVersion newVersion = new RvcVersion();
+            changes.VersionBefore = this;
+            changes.VersionAfter = newVersion;
+            AddDownstreamChangeSet(changes);
+            newVersion.UpstreamChangeSet = changes;
+
+            return newVersion;
+        }
+
         /// <summary>
         /// This function evaluates the file state for this version, by traversing the version tree and applying changesets
         /// and caches it in the State property.

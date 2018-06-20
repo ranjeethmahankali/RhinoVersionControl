@@ -28,11 +28,13 @@ namespace RvcCore.Util
             return Path.GetFileName(filePath).EndsWith(".3dm") && File.Exists(filePath);
         }
 
-        public static void ParseFile(string filePath, ref RvcRhinoFileTether tether)
+        public static FileState ParseFile(string filePath, ref RvcRhinoFileTether tether)
         {
-            if (!IsValidRhinoFile(filePath)) { return; }
+            if (!IsValidRhinoFile(filePath)) { return null; }
             RvcVersion version = RvcVersion.GetVersionById(tether.VersionId);
 
+            FileState state = null;
+            List<IFileDataTable> parsedTableList = new List<IFileDataTable>();
             //opening the store, and the file and comparing the contents
             using (var store = new DataStore(filePath, tether.RvcId))
             using (var file = File3dm.Read(filePath))
@@ -40,10 +42,24 @@ namespace RvcCore.Util
                 List<Type> memberTypes;
                 List<string> tableNames;
                 List<IEnumerable> tables3dm = GetAllTables(file, out memberTypes, out tableNames);
-                //incomplete
+                ChangeSet fileChanges = new ChangeSet();
+                for(int i = 0; i < tables3dm.Count; i++)
+                {
+                    ChangeSet tableChanges;
+                    IFileDataTable parsedTable = TableUtil.ParseTableData(tables3dm[i], tableNames[i], memberTypes[i], version, 
+                        store, out tableChanges);
+                    parsedTableList.Add(parsedTable);
+                    fileChanges = ChangeSet.Merge(fileChanges, tableChanges);
+                }
+
+                //populating the file state
+                state = new FileState(store, version.AddDownStreamVersion(fileChanges));
+                foreach(var table in parsedTableList)
+                {
+                    state.Tables.Add(table);
+                }
             }
-            //incomplete
-            throw new NotImplementedException();
+            return state;
         }
 
         public static List<IEnumerable> GetAllTables(File3dm file, out List<Type> memberTypes, out List<string> names)
@@ -64,6 +80,13 @@ namespace RvcCore.Util
             }
 
             return tables;
+        }
+
+        public static List<IEnumerable> GetAllTables(File3dm file)
+        {
+            List<Type> memTypes;
+            List<string> names;
+            return GetAllTables(file, out memTypes, out names);
         }
     }
 }

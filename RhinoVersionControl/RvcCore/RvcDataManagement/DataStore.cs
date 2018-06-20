@@ -95,6 +95,38 @@ namespace RvcCore.RvcDataManagement
             return (ModelComponent)method.Invoke(this, new object[] { id });
         }
 
+        /// <summary>
+        /// Adds a new object to the store, to the appropriate table and returns the guid of the newly added object
+        /// </summary>
+        /// <typeparam name="T">Type of the object being added</typeparam>
+        /// <param name="comp">The object to be added</param>
+        /// <returns>Guid of the newly added object</returns>
+        public Guid AddObjectOfType<T>(T comp, bool assignNewGuid = false)
+            where T : ModelComponent
+        {
+            foreach (var tableProp in TablePropInfos)
+            {
+                Type tableOfType = tableProp.PropertyType.GetGenericArguments().Single();
+                if (!typeof(T).IsAssignableFrom(tableOfType)) { continue; }
+                File3dmCommonComponentTable<T> table = (File3dmCommonComponentTable<T>)tableProp.GetValue(_storeFile);
+                T match = table.FindId(comp.Id);
+                if (assignNewGuid || match != null)
+                {
+                    Guid addedGuid = Guid.NewGuid();
+                    comp.Id = addedGuid;
+                }
+                table.Add(comp);
+            }
+            return comp.Id;
+        }
+
+        public Guid AddObject(ModelComponent comp, bool assignedNewGuid = false)
+        {
+            MethodInfo genericMethod = GetType().GetMethod("AddObjectOfType");
+            MethodInfo method = genericMethod.MakeGenericMethod(comp.GetType());
+            return (Guid)method.Invoke(this, new object[] { comp, assignedNewGuid });
+        }
+
         public void Dispose()
         {
             _storeFile.Dispose();

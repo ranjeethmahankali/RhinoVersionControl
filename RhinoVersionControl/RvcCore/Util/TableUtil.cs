@@ -34,15 +34,12 @@ namespace RvcCore.Util
             return list;
         }
 
-        public static IFileDataTable ParseTableData(IEnumerable tableData, string tableName, Type dataType, RvcVersion version, ref DataStore store)
+        public static IFileDataTable ParseTableData(IEnumerable table3dm, string tableName, Type dataType, RvcVersion version, DataStore store,
+            out ChangeSet changes)
         {
-            IFileDataTable table = CreateTableInstance(dataType);
-            table.Name = tableName;
-
-            IFileDataTable refTable = version.State.GetMatchingTable(table);
-            //if = 
-            //incomplete
-            throw new NotImplementedException();
+            IFileDataTable refTable = version.State.GetMatchingTable(dataType, tableName);
+            changes = EvaluateDiffWith3dmData(refTable, table3dm, ref store);
+            return refTable.ApplyChangeSet(changes);
         }
 
         public static IFileDataTable CreateTableInstance(Type memberT)
@@ -58,27 +55,53 @@ namespace RvcCore.Util
             return (IFileDataTable)Activator.CreateInstance(combined);
         }
 
-        public ChangeSet EvaluateDiffWith3dmData(IFileDataTable table, IEnumerable table3dm, DataStore store)
+        public static ChangeSet EvaluateDiffWith3dmData(IFileDataTable table, IEnumerable table3dm, ref DataStore store)
         {
+            Type tableObjectType = null;
+            ChangeSet changes = new ChangeSet();
+            Dictionary<Guid, ModelComponent> table3dmCached = new Dictionary<Guid, ModelComponent>();
+            HashSet<Guid> objGuidsWithMatches = new HashSet<Guid>();
             var i = table3dm.GetEnumerator();
             while (i.MoveNext())
             {
                 ModelComponent comp = (ModelComponent)i.Current;
+                if(tableObjectType == null) { tableObjectType = comp.GetType(); }
+                //caching this for future use
+                table3dmCached.Add(comp.Id, comp);
+                //now doing the comparison
                 if (table.Contains(comp.Id))
                 {
-                    ModelComponent old = store.ObjectLookup(comp.Id, comp.GetType());
-                    if(old == null)
+                    objGuidsWithMatches.Add(comp.Id);
+                    ModelComponent obj = table.GetModelComponent(comp.Id);
+                    if(!obj.Equals(comp))
                     {
-                        //create addition change
-                    }
-                    else
-                    {
-                        //ModelComponent newOne = table.GetModelComponent(comp.Id);
+                        //object has been modified
+                        Guid initialVersion;
+                        if (!table.ObjectHasAlias(comp.Id, out initialVersion))
+                        {
+                            initialVersion = comp.Id;
+                        }
+                        //adding the new version of the object to the store
+                        Guid finalVersion = store.AddObject(comp, true);
+                        //create modification type change from initial version to final version
+                        changes.AddChange(ChangeType.Modification, tableObjectType, comp.Id, initialVersion, finalVersion);
                     }
                 }
+                else
+                {
+                    //create addition change
+                    changes.AddChange(ChangeType.Addition, tableObjectType, comp.Id);
+                }
             }
-            //incomplete
-            throw new NotImplementedException();
+
+            //finding the objects in the original tables whose matches were not found
+            var deletedGuids = table.Objects.Except(objGuidsWithMatches);
+            foreach(var deleted in deletedGuids)
+            {
+                changes.AddChange(ChangeType.Deletion, tableObjectType, deleted);
+            }
+
+            return changes;
         }
 
         public static bool IsFile3dmTableType(Type type, out Type memberType)

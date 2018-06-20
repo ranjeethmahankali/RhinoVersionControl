@@ -102,8 +102,6 @@ namespace RvcCore.VersionManagement
             }
 
             if(change != null) { AddChange(change); }
-            //incomplete
-            throw new NotImplementedException();
         }
         #endregion
     }

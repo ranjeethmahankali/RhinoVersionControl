@@ -28,6 +28,20 @@ namespace RvcCore.RvcDataManagement
         {
             Tables = new HashSet<IFileDataTable>();
         }
+        public FileState(DataStore store, RvcVersion version): this()
+        {
+            Store = store;
+            Version = version;
+        }
+        public FileState(FileState old, ChangeSet changes)
+        {
+            FileState changed = old.ApplyChangeSet(changes);
+            foreach (var table in Tables)
+            {
+                Tables.Add((IFileDataTable)table.Clone());
+            }
+            Store = Store;
+        }
         #endregion
 
         #region methods
