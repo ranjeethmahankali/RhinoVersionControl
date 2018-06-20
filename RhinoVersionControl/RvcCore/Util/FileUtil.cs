@@ -28,9 +28,13 @@ namespace RvcCore.Util
             return Path.GetFileName(filePath).EndsWith(".3dm") && File.Exists(filePath);
         }
 
-        public static FileState ParseFile(string filePath, ref RvcRhinoFileTether tether)
+        public static FileState ParseFile(string filePath, ref RvcRhinoFileTether tether, out ChangeSet changes)
         {
-            if (!IsValidRhinoFile(filePath)) { return null; }
+            if (!IsValidRhinoFile(filePath))
+            {
+                changes = null;
+                return null;
+            }
             RvcVersion version = RvcVersion.GetVersionById(tether.VersionId);
 
             FileState state = null;
@@ -58,6 +62,7 @@ namespace RvcCore.Util
                 {
                     state.Tables.Add(table);
                 }
+                changes = fileChanges;
             }
             return state;
         }
