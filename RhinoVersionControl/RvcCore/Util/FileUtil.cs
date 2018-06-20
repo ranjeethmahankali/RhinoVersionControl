@@ -37,22 +37,28 @@ namespace RvcCore.Util
             using (var store = new DataStore(filePath, tether.RvcId))
             using (var file = File3dm.Read(filePath))
             {
-                List<IEnumerable> tables = GetAllTables(file);
+                List<Type> memberTypes;
+                List<string> tableNames;
+                List<IEnumerable> tables = GetAllTables(file, out memberTypes, out tableNames);
                 //incomplete
             }
             //incomplete
             throw new NotImplementedException();
         }
 
-        public static List<IEnumerable> GetAllTables(File3dm file)
+        public static List<IEnumerable> GetAllTables(File3dm file, out List<Type> memberTypes, out List<string> names)
         {
             var props = typeof(File3dm).GetProperties();
             List<IEnumerable> tables = new List<IEnumerable>();
+            memberTypes = new List<Type>();
+            names = new List<string>();
             foreach (var p in props)
             {
                 Type memberType;
                 var match = TableUtil.IsFile3dmTableType(p.PropertyType, out memberType);
                 if (!match) { continue; }
+                memberTypes.Add(memberType);
+                names.Add(p.Name);
                 var table = p.GetValue(file);
                 tables.Add((IEnumerable)table);
             }

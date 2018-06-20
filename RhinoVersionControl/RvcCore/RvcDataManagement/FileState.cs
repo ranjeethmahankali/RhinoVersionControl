@@ -69,7 +69,7 @@ namespace RvcCore.RvcDataManagement
         public T ObjectLookup<T>(Guid id)
             where T : ModelComponent
         {
-            return Store.ObjectLookup<T>(id);
+            return Store.ObjectLookupOfType<T>(id);
         }
 
         public override object Clone()

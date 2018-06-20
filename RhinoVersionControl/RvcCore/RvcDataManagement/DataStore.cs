@@ -68,7 +68,7 @@ namespace RvcCore.RvcDataManagement
         #endregion
 
         #region methods
-        public T ObjectLookup<T>(Guid id)
+        public T ObjectLookupOfType<T>(Guid id)
             where T : ModelComponent
         {
             T obj = null;
@@ -82,9 +82,30 @@ namespace RvcCore.RvcDataManagement
             }
             return obj;
         }
+
+        public ModelComponent ObjectLookup(Guid id, Type objT)
+        {
+            if (!typeof(ModelComponent).IsAssignableFrom(objT))
+            {
+                throw new NotImplementedException("Invalid member data type for the table");
+            }
+
+            MethodInfo genericMethod = GetType().GetMethod("ObjectLookupOfType");
+            MethodInfo method = genericMethod.MakeGenericMethod(objT);
+            return (ModelComponent)method.Invoke(this, new object[] { id });
+        }
+
         public void Dispose()
         {
             _storeFile.Dispose();
+        }
+        public bool Save()
+        {
+            if (File.Exists(StoreFilePath))
+            {
+                File.Delete(StoreFilePath);
+            }
+            return _storeFile.Write(StoreFilePath, 0);
         }
         #endregion
     }

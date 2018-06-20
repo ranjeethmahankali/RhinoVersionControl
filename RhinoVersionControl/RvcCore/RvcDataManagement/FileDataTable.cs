@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +25,10 @@ namespace RvcCore.RvcDataManagement
         string Name { get; set; }
         bool ApplyChange(IChange change);
         bool RollbackChange(IChange change);
+        bool Contains(Guid id);
+        bool Delete(Guid id);
+        void Add(Guid id);
+        void Add(Guid id, Guid alias);
     }
     /// <summary>
     /// A FileState is a collection of tables imported from the 3dm file. This is the class that represents the individual tables in the file
@@ -86,7 +91,7 @@ namespace RvcCore.RvcDataManagement
             {
                 objId = id;
             }
-            return Store.ObjectLookup<T>(objId);
+            return Store.ObjectLookupOfType<T>(objId);
         }
         public bool ObjectHasAlias(Guid id, out Guid alias)
         {

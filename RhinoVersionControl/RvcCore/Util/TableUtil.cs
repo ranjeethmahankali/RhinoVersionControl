@@ -34,6 +34,43 @@ namespace RvcCore.Util
             return list;
         }
 
+        public static IFileDataTable ParseTableData(IEnumerable tableData, Type dataType, RvcVersion version, ref DataStore store)
+        {
+            IFileDataTable table = CreateTableInstance(dataType);
+
+            //incomplete
+            throw new NotImplementedException();
+        }
+
+        public static IFileDataTable CreateTableInstance(Type memberT)
+        {
+            if (!typeof(ModelComponent).IsAssignableFrom(memberT))
+            {
+                throw new NotImplementedException("Invalid member data type for creating the table");
+            }
+            Type generic = typeof(FileDataTable<>);
+            Type[] typeArgs = new Type[] { memberT };
+            Type combined = generic.MakeGenericType(typeArgs);
+
+            return (IFileDataTable)Activator.CreateInstance(combined);
+        }
+
+        public ChangeSet EvaluateDiffWith3dmData(IFileDataTable table, IEnumerable table3dm, DataStore store)
+        {
+            var i = table3dm.GetEnumerator();
+            while (i.MoveNext())
+            {
+                ModelComponent comp = (ModelComponent)i.Current;
+                if (table.Contains(comp.Id))
+                {
+                    ModelComponent old = store.ObjectLookup(comp.Id, comp.GetType());
+                    //if(old == null) { }
+                }
+            }
+            //incomplete
+            throw new NotImplementedException();
+        }
+
         public static bool IsFile3dmTableType(Type type, out Type memberType)
         {
             while (type != null && type != typeof(object))

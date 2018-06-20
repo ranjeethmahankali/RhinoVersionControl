@@ -60,6 +60,12 @@ namespace RvcCore.VersionManagement
             clone.VersionBefore = VersionBefore;
             return clone;
         }
+
+        public void AddChange(ChangeType type, Type objType, params Guid[] guidParams)
+        {
+            //incomplete
+            throw new NotImplementedException();
+        }
         #endregion
     }
 }
