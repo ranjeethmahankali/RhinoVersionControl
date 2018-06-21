@@ -32,9 +32,10 @@ namespace RvcCore.VersionManagement
         #endregion
 
         #region constructors
-        private RvcVersion()
+        internal RvcVersion()
         {
             DownstreamChangeSets = new Dictionary<Guid, ChangeSet>();
+            UpstreamChangeSet = null;
             Id = Guid.NewGuid();
         }
         #endregion

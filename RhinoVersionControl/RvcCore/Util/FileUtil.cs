@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Reflection;
 
+using Newtonsoft.Json;
+
 using Rhino.FileIO;
 using RvcCore.RvcDataManagement;
 using RvcCore.VersionManagement;
@@ -28,43 +30,63 @@ namespace RvcCore.Util
             return Path.GetFileName(filePath).EndsWith(".3dm") && File.Exists(filePath);
         }
 
-        public static FileState ParseFile(string filePath, ref RvcRhinoFileTether tether, out ChangeSet changes)
+        private static FileState ParseFile(File3dm file, DataStore store, RvcVersion version, out ChangeSet changes)
+        {
+            FileState state = null;
+            List<IFileDataTable> parsedTableList = new List<IFileDataTable>();
+            //opening the store, and the file and comparing the contents
+            List<Type> memberTypes;
+            List<string> tableNames;
+            List<IEnumerable> tables3dm = GetAllTables(file, out memberTypes, out tableNames);
+            ChangeSet fileChanges = new ChangeSet();
+            for (int i = 0; i < tables3dm.Count; i++)
+            {
+                ChangeSet tableChanges;
+                IFileDataTable parsedTable = TableUtil.ParseTableData(tables3dm[i], tableNames[i], memberTypes[i], version, store, out tableChanges);
+                parsedTableList.Add(parsedTable);
+                fileChanges = ChangeSet.Merge(fileChanges, tableChanges);
+            }
+
+            //populating the file state
+            state = new FileState(store, version.AddDownStreamVersion(fileChanges));
+            foreach (var table in parsedTableList)
+            {
+                state.Tables.Add(table);
+            }
+            changes = fileChanges;
+            return state;
+        }
+
+        public static FileState ParseFile(string filePath, out ChangeSet changes)
         {
             if (!IsValidRhinoFile(filePath))
             {
                 changes = null;
                 return null;
             }
-            RvcVersion version = RvcVersion.GetVersionById(tether.VersionId);
-
-            FileState state = null;
-            List<IFileDataTable> parsedTableList = new List<IFileDataTable>();
             //opening the store, and the file and comparing the contents
-            using (var store = new DataStore(filePath, tether.RvcId))
             using (var file = File3dm.Read(filePath))
             {
-                List<Type> memberTypes;
-                List<string> tableNames;
-                List<IEnumerable> tables3dm = GetAllTables(file, out memberTypes, out tableNames);
-                ChangeSet fileChanges = new ChangeSet();
-                for(int i = 0; i < tables3dm.Count; i++)
+                string tetherJson = file.Strings.GetValue(RvcRhinoFileTether.RvcTetherKey);
+                RvcRhinoFileTether tether;
+                RvcVersion version = null;
+                if (tetherJson == null)
                 {
-                    ChangeSet tableChanges;
-                    IFileDataTable parsedTable = TableUtil.ParseTableData(tables3dm[i], tableNames[i], memberTypes[i], version, 
-                        store, out tableChanges);
-                    parsedTableList.Add(parsedTable);
-                    fileChanges = ChangeSet.Merge(fileChanges, tableChanges);
+                    version = new RvcVersion();
+                    tether = new RvcRhinoFileTether(version.Id);
                 }
-
-                //populating the file state
-                state = new FileState(store, version.AddDownStreamVersion(fileChanges));
-                foreach(var table in parsedTableList)
+                else
                 {
-                    state.Tables.Add(table);
+                    tether = JsonConvert.DeserializeObject<RvcRhinoFileTether>(tetherJson);
                 }
-                changes = fileChanges;
+                //we have to retrieve all the archive data for the file if exists, or create one if not.
+                //incomplete
+                //throw new NotImplementedException();
+                using (var store = new DataStore(filePath, tether.RvcId))
+                {
+                    return ParseFile(file, store, version, out changes);
+                }
             }
-            return state;
         }
 
         public static List<IEnumerable> GetAllTables(File3dm file, out List<Type> memberTypes, out List<string> names)

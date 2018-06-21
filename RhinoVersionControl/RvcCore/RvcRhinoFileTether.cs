@@ -13,7 +13,7 @@ namespace RvcCore
     public class RvcRhinoFileTether
     {
         #region fields
-
+        public static string RvcTetherKey = "rvc-b6ebb60e-b93e-4d38-8d08-7493278bf152";
         #endregion
 
         #region properties
@@ -29,7 +29,12 @@ namespace RvcCore
         #endregion
 
         #region constructors
-
+        public RvcRhinoFileTether() { }
+        public RvcRhinoFileTether(Guid versionId)
+        {
+            RvcId = Guid.NewGuid();
+            VersionId = versionId;
+        }
         #endregion
 
         #region methods
