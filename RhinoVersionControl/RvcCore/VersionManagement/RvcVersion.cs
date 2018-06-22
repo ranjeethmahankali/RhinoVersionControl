@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 using RvcCore.RvcDataManagement;
 
 namespace RvcCore.VersionManagement
 {
+    [JsonConverter(typeof(Serialization.RvcVersionSerializer))]
     public class RvcVersion: Entity, IEquatable<RvcVersion>
     {
         #region fields
@@ -29,6 +31,7 @@ namespace RvcCore.VersionManagement
                 return _state;
             }
         }
+        public RvcVersion RootVersion { get => UpstreamChangeSet == null ? this : UpstreamChangeSet.VersionBefore.RootVersion; }
         #endregion
 
         #region constructors

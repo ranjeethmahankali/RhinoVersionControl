@@ -14,6 +14,7 @@ namespace RvcCore
     {
         #region fields
         public static string RvcTetherKey = "rvc-b6ebb60e-b93e-4d38-8d08-7493278bf152";
+        public static string RvcArchiveDirectoryName = ".rvc";
         #endregion
 
         #region properties

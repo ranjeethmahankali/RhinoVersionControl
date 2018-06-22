@@ -38,7 +38,7 @@ namespace RvcCore.RvcDataManagement
         public DataStore(string rhinoFilePath, Guid rvcTetherId)
         {
             string rhDir = Path.GetDirectoryName(rhinoFilePath);
-            string rvcDirPath = Path.Combine(rhDir, ".rvc");
+            string rvcDirPath = Path.Combine(rhDir, RvcRhinoFileTether.RvcArchiveDirectoryName);
 
             if (!Directory.Exists(rvcDirPath))
             {
