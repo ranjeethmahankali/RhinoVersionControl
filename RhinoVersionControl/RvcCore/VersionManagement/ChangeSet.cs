@@ -29,6 +29,13 @@ namespace RvcCore.VersionManagement
         }
         #endregion
 
+        #region constructors
+        public ChangeSet(): base()
+        {
+            _changeDict = new Dictionary<Guid, IChange>();
+        }
+        #endregion
+
         #region methods
         public void AddChange(IChange change)
         {
@@ -80,24 +87,27 @@ namespace RvcCore.VersionManagement
             }
             if(guidParams.Length == 0) { throw new InvalidOperationException("Too few guid parameters provided"); }
 
+            Type rawType = typeof(Change<>);
+            Type genericChangeType = rawType.MakeGenericType(new Type[] { objType });
+
             IChange change = null;
             if(type == ChangeType.Addition)
             {
-                MethodInfo generic = typeof(Change<>).GetMethod("CreateAddition");
-                MethodInfo method = generic.MakeGenericMethod(objType);
+                MethodInfo generic = genericChangeType.GetMethod("CreateAddition");
+                MethodInfo method = generic.MakeGenericMethod(new Type[] { objType });
                 change = (IChange)method.Invoke(null, new object[] { guidParams[0] });
             }
             else if(type == ChangeType.Deletion)
             {
-                MethodInfo generic = typeof(Change<>).GetMethod("CreateDeletion");
-                MethodInfo method = generic.MakeGenericMethod(objType);
+                MethodInfo generic = genericChangeType.GetMethod("CreateDeletion");
+                MethodInfo method = generic.MakeGenericMethod(new Type[] { objType });
                 change = (IChange)method.Invoke(null, new object[] { guidParams[0] });
             }
             else if(type == ChangeType.Modification)
             {
                 if(guidParams.Length < 3) { throw new InvalidOperationException("Too few guids for a change type 'modification'."); }
-                MethodInfo generic = typeof(Change<>).GetMethod("CreateModification");
-                MethodInfo method = generic.MakeGenericMethod(objType);
+                MethodInfo generic = genericChangeType.GetMethod("CreateModification");
+                MethodInfo method = generic.MakeGenericMethod(new Type[] { objType });
                 change = (IChange)method.Invoke(null, new object[] { guidParams[0], guidParams[1], guidParams[2] });
             }
 

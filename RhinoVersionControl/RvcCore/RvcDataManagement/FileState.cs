@@ -24,7 +24,7 @@ namespace RvcCore.RvcDataManagement
         #endregion
 
         #region constructors
-        private FileState()
+        internal FileState()
         {
             Tables = new HashSet<IFileDataTable>();
         }

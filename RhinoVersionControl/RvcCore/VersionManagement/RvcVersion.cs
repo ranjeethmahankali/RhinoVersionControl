@@ -87,8 +87,8 @@ namespace RvcCore.VersionManagement
         public FileState EvaluateState()
         {
             FileState state;
-            FileState prevState = 
-            state = UpstreamChangeSet.VersionBefore.State.ApplyChangeSet(UpstreamChangeSet);
+            //FileState prevState = 
+            state = UpstreamChangeSet?.VersionBefore?.State.ApplyChangeSet(UpstreamChangeSet) ?? new FileState() ;
             state.Version = this;
             return state;
         }

@@ -11,6 +11,7 @@ using System.Xml.Serialization;
 using System.Xml;
 using RvcCore.Util;
 using Newtonsoft.Json;
+using RvcCore.VersionManagement;
 
 namespace RvcTestApp
 {
@@ -18,30 +19,15 @@ namespace RvcTestApp
     {
         static void Main(string[] args)
         {
-            string path = @"C:\Users\ranje\Desktop\testFile.rvc";
-            List<double> nums = new List<double>() { 1,2,3,4,5 };
-            var first = nums.First();
-            List<File3dmObject> objs, newObjs;
-            string oldOne, newOne;
-            using (File3dm file = File3dm.Read(path))
-            {
-                objs = TableUtil.ToList(file.Objects);
-                oldOne = JsonConvert.SerializeObject(objs);
-                //file.
-            }
+            string path = @"C:\Users\ranje\Desktop\RvcTest\testFile.3dm";
+            ChangeSet changes;
+            FileUtil.ParseFile(path, out changes);
+
             Console.WriteLine("Please edit the contents of the file and save it");
             Console.ReadKey();
-            using (File3dm file = File3dm.Read(path))
-            {
-                newObjs = TableUtil.ToList(file.Objects);
-                newOne = JsonConvert.SerializeObject(newObjs);
-                var tables = FileUtil.GetAllTables(file);
-            }
-
-            objs = JsonConvert.DeserializeObject<List<File3dmObject>>(oldOne, new JsonSerializerSettings {
-                ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor
-            });
-            //File3dmObject fo = new File3dmObject();
+            ChangeSet newChanges;
+            FileUtil.ParseFile(path, out newChanges);
+            Console.ReadKey();
         }
     }
 }

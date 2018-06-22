@@ -38,6 +38,12 @@ namespace RvcCore.Util
             out ChangeSet changes)
         {
             IFileDataTable refTable = version.State.GetMatchingTable(dataType, tableName);
+            if(refTable == null)
+            {
+                refTable = CreateTableInstance(dataType);
+                version.State.Tables.Add(refTable);
+                version.State.Store = store;
+            }
             changes = EvaluateDiffWith3dmData(refTable, table3dm, ref store);
             return refTable.ApplyChangeSet(changes);
         }

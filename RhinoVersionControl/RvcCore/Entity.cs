@@ -15,5 +15,9 @@ namespace RvcCore
     {
         public Guid Id { get; set; }
         public abstract object Clone();
+        internal Entity()
+        {
+            Id = Guid.NewGuid();
+        }
     }
 }

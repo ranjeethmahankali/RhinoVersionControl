@@ -24,7 +24,7 @@ namespace RvcCore.RvcDataManagement
             get => Path.Combine(RhinoFileDirectory, RvcRhinoFileTether.RvcArchiveDirectoryName, RvcId.ToString());
         }
         public RvcVersion RootVersion { get; private set; }
-        public string VersionHistoryPath { get => Path.Combine(ArchivePath, ); }
+        public string VersionHistoryPath { get => Path.Combine(ArchivePath, HistoryFileName); }
         #endregion
 
         #region constructors
@@ -35,7 +35,8 @@ namespace RvcCore.RvcDataManagement
             RootVersion = rootVersion;
             if (!Directory.Exists(ArchivePath))
             {
-                Directory.CreateDirectory(ArchivePath);
+                DirectoryInfo di = Directory.CreateDirectory(ArchivePath);
+                //di.Attributes = FileAttributes.Directory | FileAttributes.Hidden;
             }
         }
         internal RvcArchive(RvcRhinoFileTether tether, RvcVersion version, string rhinoFileDir) : this (tether.RvcId, version, rhinoFileDir) { }

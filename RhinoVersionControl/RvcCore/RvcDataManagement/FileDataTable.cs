@@ -67,8 +67,9 @@ namespace RvcCore.RvcDataManagement
         public FileDataTable()
         {
             _objects = new HashSet<Guid>();
+            _aliases = new Dictionary<Guid, Guid>();
         }
-        public FileDataTable(FileState state, string name)
+        public FileDataTable(FileState state, string name): this()
         {
             State = state;
             Name = name;
