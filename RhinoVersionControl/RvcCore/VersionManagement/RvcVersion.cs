@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System.IO;
 
 using RvcCore.RvcDataManagement;
 
 namespace RvcCore.VersionManagement
 {
-    [JsonConverter(typeof(Serialization.RvcVersionSerializer))]
+    //[JsonConverter(typeof(Serialization.RvcVersionSerializer))]
     public class RvcVersion: Entity, IEquatable<RvcVersion>
     {
         #region fields
@@ -40,6 +41,7 @@ namespace RvcCore.VersionManagement
             DownstreamChangeSets = new Dictionary<Guid, ChangeSet>();
             UpstreamChangeSet = null;
             Id = Guid.NewGuid();
+            _versionDict.Add(Id, this);
         }
         #endregion
 
@@ -108,6 +110,17 @@ namespace RvcCore.VersionManagement
                 version = null;
             }
             return version;
+        }
+        public static RvcVersion ReadRootVersion(string archiveDir)
+        {
+            string historyPath = Path.Combine(archiveDir, RvcArchive.HistoryFileName);
+            RvcVersion rootVersion = null;
+            using(StreamReader reader = new StreamReader(historyPath))
+            {
+                rootVersion = JsonConvert.DeserializeObject<RvcVersion>(reader.ReadToEnd());
+            }
+
+            return rootVersion;
         }
         #endregion
     }

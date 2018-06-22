@@ -68,6 +68,7 @@ namespace RvcCore.Util
             using (var file = File3dm.Read(filePath))
             {
                 string tetherJson = file.Strings.GetValue(RvcRhinoFileTether.RvcTetherKey);
+                string dirPath = Path.GetDirectoryName(filePath);
                 RvcRhinoFileTether tether;
                 RvcVersion version = null;
                 if (tetherJson == null)
@@ -78,10 +79,10 @@ namespace RvcCore.Util
                 else
                 {
                     tether = JsonConvert.DeserializeObject<RvcRhinoFileTether>(tetherJson);
+                    version = RvcVersion.ReadRootVersion(Path.Combine(dirPath, RvcRhinoFileTether.RvcArchiveDirectoryName, tether.RvcId.ToString()));
                 }
-                //we have to retrieve all the archive data for the file if exists, or create one if not.
-                //incomplete
-                //throw new NotImplementedException();
+                RvcArchive archive = new RvcArchive(tether, version, Path.GetDirectoryName(filePath));
+
                 using (var store = new DataStore(filePath, tether.RvcId))
                 {
                     return ParseFile(file, store, version, out changes);

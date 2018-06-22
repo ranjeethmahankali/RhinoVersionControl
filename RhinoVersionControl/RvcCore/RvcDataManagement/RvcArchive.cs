@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
+using Newtonsoft.Json;
 using RvcCore.VersionManagement;
 
 namespace RvcCore.RvcDataManagement
@@ -12,7 +13,7 @@ namespace RvcCore.RvcDataManagement
     public class RvcArchive
     {
         #region fields
-
+        internal static string HistoryFileName = "history.rvc";
         #endregion
 
         #region properties
@@ -23,10 +24,11 @@ namespace RvcCore.RvcDataManagement
             get => Path.Combine(RhinoFileDirectory, RvcRhinoFileTether.RvcArchiveDirectoryName, RvcId.ToString());
         }
         public RvcVersion RootVersion { get; private set; }
+        public string VersionHistoryPath { get => Path.Combine(ArchivePath, ); }
         #endregion
 
         #region constructors
-        public RvcArchive(Guid rvcId, RvcVersion rootVersion, string rhinoFileDir)
+        internal RvcArchive(Guid rvcId, RvcVersion rootVersion, string rhinoFileDir)
         {
             RvcId = rvcId;
             RhinoFileDirectory = rhinoFileDir;
@@ -36,26 +38,26 @@ namespace RvcCore.RvcDataManagement
                 Directory.CreateDirectory(ArchivePath);
             }
         }
-        public RvcArchive(RvcRhinoFileTether tether, RvcVersion version, string rhinoFileDir) : this (tether.RvcId, version, rhinoFileDir) { }
+        internal RvcArchive(RvcRhinoFileTether tether, RvcVersion version, string rhinoFileDir) : this (tether.RvcId, version, rhinoFileDir) { }
         #endregion
 
         #region methods
         public void Save()
         {
-            //incomplete
-            throw new NotImplementedException();
+            WriteVersionHistory();
         }
 
-        private void SerializeVersionHistory(Action<RvcVersion> versionWriter = null, Action<ChangeSet> changeWriter = null)
+        private void WriteVersionHistory()
         {
-            if(versionWriter == null)
+            using(StreamWriter writer = new StreamWriter(VersionHistoryPath, false))
             {
-                versionWriter = (version) => {
-
-                };
+                writer.Write(JsonConvert.SerializeObject(RootVersion));
             }
-            //incomplete
-            throw new NotImplementedException();
+        }
+
+        public RvcVersion GetVersionById(Guid id)
+        {
+            return RvcVersion.GetVersionById(id);
         }
         #endregion
     }
