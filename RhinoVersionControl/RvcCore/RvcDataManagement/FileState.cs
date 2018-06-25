@@ -15,7 +15,7 @@ namespace RvcCore.RvcDataManagement
     public class FileState: Entity
     {
         #region fields
-        public HashSet<IFileDataTable> Tables { get; }
+        private HashSet<IFileDataTable> _tables { get; }
         #endregion
 
         #region properties
@@ -26,7 +26,7 @@ namespace RvcCore.RvcDataManagement
         #region constructors
         internal FileState()
         {
-            Tables = new HashSet<IFileDataTable>();
+            _tables = new HashSet<IFileDataTable>();
         }
         public FileState(DataStore store, RvcVersion version): this()
         {
@@ -36,21 +36,26 @@ namespace RvcCore.RvcDataManagement
         public FileState(FileState old, ChangeSet changes)
         {
             FileState changed = old.ApplyChangeSet(changes);
-            foreach (var table in Tables)
+            foreach (var table in _tables)
             {
-                Tables.Add((IFileDataTable)table.Clone());
+                _tables.Add((IFileDataTable)table.Clone());
             }
             Store = Store;
         }
         #endregion
 
         #region methods
+        public void AddTable(IFileDataTable table)
+        {
+            table.State = this;
+            _tables.Add(table);
+        }
         public FileState ApplyChangeSet(ChangeSet changes)
         {
             FileState result = (FileState)Clone();
             foreach (var id in changes.ChangesMap.Keys)
             {
-                result.RollbackChange(changes.ChangesMap[id]);
+                result.ApplyChange(changes.ChangesMap[id]);
             }
             return result;
         }
@@ -61,7 +66,7 @@ namespace RvcCore.RvcDataManagement
             //apply the change set to the result state before returning it
             foreach(var id in changes.ChangesMap.Keys)
             {
-                result.ApplyChange(changes.ChangesMap[id]);
+                result.RollbackChange(changes.ChangesMap[id]);
             }
             return result;
         }
@@ -89,9 +94,9 @@ namespace RvcCore.RvcDataManagement
         public override object Clone()
         {
             FileState clone = new FileState();
-            foreach(var table in Tables)
+            foreach(var table in _tables)
             {
-                clone.Tables.Add((IFileDataTable)table.Clone());
+                clone._tables.Add((IFileDataTable)table.Clone());
             }
             clone.Store = Store;
             clone.Version = Version;
@@ -105,7 +110,7 @@ namespace RvcCore.RvcDataManagement
         public IFileDataTable GetMatchingTable(Type memberType, string name = null)
         {
             List<IFileDataTable> matches = new List<IFileDataTable>();
-            foreach (var t in Tables)
+            foreach (var t in _tables)
             {
                 if (t.MemberType == memberType) { matches.Add(t); }
                 if(name != null && t.Name == name) { return matches.Last(); }
@@ -119,7 +124,7 @@ namespace RvcCore.RvcDataManagement
         public static ChangeSet EvaluateDiff(FileState state1, FileState state2)
         {
             ChangeSet changeSet = new ChangeSet();
-            foreach(var table1 in state1.Tables)
+            foreach(var table1 in state1._tables)
             {
                 Type memberType = table1.MemberType;
                 var table2 = state2.GetMatchingTable(table1);

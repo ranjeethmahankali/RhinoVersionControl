@@ -10,6 +10,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 
 using Rhino.FileIO;
+using Rhino.DocObjects;
 using RvcCore.RvcDataManagement;
 using RvcCore.VersionManagement;
 
@@ -51,7 +52,7 @@ namespace RvcCore.Util
             state = new FileState(store, version.AddDownStreamVersion(fileChanges));
             foreach (var table in parsedTableList)
             {
-                state.Tables.Add(table);
+                state.AddTable(table);
             }
             changes = fileChanges;
             return state;
@@ -70,24 +71,51 @@ namespace RvcCore.Util
                 string tetherJson = file.Strings.GetValue(RvcRhinoFileTether.RvcTetherKey);
                 string dirPath = Path.GetDirectoryName(filePath);
                 RvcRhinoFileTether tether;
-                RvcVersion version = null;
-                if (tetherJson == null)
+                RvcVersion version;
+                FileState state;
+                bool newArchive = tetherJson == null;
+                if (newArchive)
                 {
-                    version = new RvcVersion();
-                    tether = new RvcRhinoFileTether(version.Id);
+                    tether = StartTrackingFile(file, filePath, out version, out state, out changes);
                 }
                 else
                 {
                     tether = JsonConvert.DeserializeObject<RvcRhinoFileTether>(tetherJson);
                     version = RvcVersion.ReadRootVersion(Path.Combine(dirPath, RvcRhinoFileTether.RvcArchiveDirectoryName, tether.RvcId.ToString()));
-                }
-                RvcArchive archive = new RvcArchive(tether, version, Path.GetDirectoryName(filePath));
 
-                using (var store = new DataStore(filePath, tether.RvcId))
-                {
-                    return ParseFile(file, store, version, out changes);
+                    RvcArchive archive = new RvcArchive(tether, version, Path.GetDirectoryName(filePath));
+
+                    using (var store = new DataStore(filePath, tether.RvcId))
+                    {
+                        state = ParseFile(file, store, version, out changes);
+                    }
                 }
+
+                return state;
             }
+        }
+
+        private static RvcRhinoFileTether StartTrackingFile(File3dm file, string filePath, out RvcVersion rootVersion, out FileState state, 
+            out ChangeSet changes)
+        {
+            rootVersion = new RvcVersion();
+            RvcRhinoFileTether tether = new RvcRhinoFileTether(rootVersion.Id);
+            file.Strings.SetString(RvcRhinoFileTether.RvcTetherKey, JsonConvert.SerializeObject(tether));
+            using(var store = new DataStore(filePath, tether.RvcId))
+            {
+                CloneFileToDataStore(file, store);
+                store.Save();
+            }
+
+            using (var store = new DataStore(filePath, tether.RvcId))
+            {
+                state = ParseFile(file, store, rootVersion, out changes);
+            }
+            rootVersion.State = state;
+            string dirPath = Path.GetDirectoryName(filePath);
+            //RvcVersion.WriteRootVersion(rootVersion, Path.Combine(dirPath, RvcRhinoFileTether.RvcArchiveDirectoryName, tether.RvcId.ToString()));
+            //file.Write(filePath, 0);
+            return tether;
         }
 
         public static List<IEnumerable> GetAllTables(File3dm file, out List<Type> memberTypes, out List<string> names)
@@ -108,6 +136,25 @@ namespace RvcCore.Util
             }
 
             return tables;
+        }
+
+        private static void CloneFileToDataStore(File3dm file, DataStore store)
+        {
+            var props = typeof(File3dm).GetProperties();
+            foreach (var p in props)
+            {
+                Type memberType;
+                var match = TableUtil.IsFile3dmTableType(p.PropertyType, out memberType);
+                if (!match) { continue; }
+                var table = p.GetValue(file);
+                var sourceTable = (IEnumerable)table;
+
+                var i = sourceTable.GetEnumerator();
+                while (i.MoveNext())
+                {
+                    store.AddObject((ModelComponent)i.Current);
+                }
+            }
         }
 
         public static List<IEnumerable> GetAllTables(File3dm file)

@@ -54,6 +54,7 @@
     <Compile Include="RvcDataManagement\FileState.cs" />
     <Compile Include="RvcDataManagement\RvcArchive.cs" />
     <Compile Include="RvcRhinoFileTether.cs" />
+    <Compile Include="Serialization\ChangeSerializer.cs" />
     <Compile Include="Serialization\ChangeSetSerializer.cs" />
     <Compile Include="Serialization\RvcVersionSerializer.cs" />
     <Compile Include="Util\FileUtil.cs" />

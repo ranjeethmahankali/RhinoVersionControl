@@ -6,26 +6,26 @@ using System.Threading.Tasks;
 
 using RvcCore.VersionManagement;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace RvcCore.Serialization
 {
-    public class ChangeSetSerializer : JsonConverter
+    public class ChangeSerializer : JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {
-            return typeof(ChangeSet).IsAssignableFrom(objectType);
+            return objectType == typeof(IChange);
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            //incomplete
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+            return serializer.Deserialize(reader, typeof(Change<>));
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            //incomplete
-            throw new NotImplementedException();
+            serializer.Serialize(writer, value);
         }
     }
 }

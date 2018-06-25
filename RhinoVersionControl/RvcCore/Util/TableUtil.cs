@@ -40,15 +40,15 @@ namespace RvcCore.Util
             IFileDataTable refTable = version.State.GetMatchingTable(dataType, tableName);
             if(refTable == null)
             {
-                refTable = CreateTableInstance(dataType);
-                version.State.Tables.Add(refTable);
+                refTable = CreateTableInstance(dataType, tableName);
+                version.State.AddTable(refTable);
                 version.State.Store = store;
             }
             changes = EvaluateDiffWith3dmData(refTable, table3dm, ref store);
             return refTable.ApplyChangeSet(changes);
         }
 
-        public static IFileDataTable CreateTableInstance(Type memberT)
+        public static IFileDataTable CreateTableInstance(Type memberT, string tableName = null)
         {
             if (!typeof(ModelComponent).IsAssignableFrom(memberT))
             {
@@ -58,7 +58,9 @@ namespace RvcCore.Util
             Type[] typeArgs = new Type[] { memberT };
             Type combined = generic.MakeGenericType(typeArgs);
 
-            return (IFileDataTable)Activator.CreateInstance(combined);
+            IFileDataTable table = (IFileDataTable)Activator.CreateInstance(combined);
+            table.Name = tableName;
+            return table;
         }
 
         public static ChangeSet EvaluateDiffWith3dmData(IFileDataTable table, IEnumerable table3dm, ref DataStore store)

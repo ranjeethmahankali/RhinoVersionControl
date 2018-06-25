@@ -106,7 +106,8 @@ namespace RvcCore.RvcDataManagement
         {
             foreach (var tableProp in TablePropInfos)
             {
-                Type tableOfType = tableProp.PropertyType.GetGenericArguments().Single();
+                Type tableOfType;
+                if(!TableUtil.IsFile3dmTableType(tableProp.PropertyType, out tableOfType)) { continue; }
                 if (!typeof(T).IsAssignableFrom(tableOfType)) { continue; }
                 File3dmCommonComponentTable<T> table = (File3dmCommonComponentTable<T>)tableProp.GetValue(_storeFile);
                 T match = table.FindId(comp.Id);

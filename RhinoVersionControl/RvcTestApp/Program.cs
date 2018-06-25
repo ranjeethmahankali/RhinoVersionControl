@@ -12,6 +12,7 @@ using System.Xml;
 using RvcCore.Util;
 using Newtonsoft.Json;
 using RvcCore.VersionManagement;
+using RvcCore.RvcDataManagement;
 
 namespace RvcTestApp
 {
@@ -21,12 +22,14 @@ namespace RvcTestApp
         {
             string path = @"C:\Users\ranje\Desktop\RvcTest\testFile.3dm";
             ChangeSet changes;
-            FileUtil.ParseFile(path, out changes);
+            FileState state1 = FileUtil.ParseFile(path, out changes);
 
             Console.WriteLine("Please edit the contents of the file and save it");
             Console.ReadKey();
             ChangeSet newChanges;
-            FileUtil.ParseFile(path, out newChanges);
+            FileState state2 = FileUtil.ParseFile(path, out newChanges);
+
+            ChangeSet diff = FileState.EvaluateDiff(state1, state2);
             Console.ReadKey();
         }
     }

@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Rhino.FileIO;
 using Rhino.DocObjects;
+using RvcCore.Serialization;
+using Newtonsoft.Json;
 
 namespace RvcCore.VersionManagement
 {
@@ -16,6 +18,7 @@ namespace RvcCore.VersionManagement
         Modification
     }
 
+    [JsonConverter(typeof(ChangeSerializer))]
     public interface IChange : IEntity
     {
         Type ObjectType { get; }
@@ -31,6 +34,7 @@ namespace RvcCore.VersionManagement
     /// This class represents a single change made to a collection of objects being tracked. This is the base class for all types of changes.
     /// </summary>
     /// <typeparam name="SetT">The type of the collection that is being tracked by this change</typeparam>
+    [JsonConverter(typeof(ChangeSerializer))]
     public class Change<T>: Entity, IChange
         where T: ModelComponent
     {

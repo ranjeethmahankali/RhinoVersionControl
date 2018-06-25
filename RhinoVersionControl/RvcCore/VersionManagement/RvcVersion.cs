@@ -21,17 +21,20 @@ namespace RvcCore.VersionManagement
         #region properties
         public ChangeSet UpstreamChangeSet { get; internal set; }
         public Dictionary<Guid, ChangeSet> DownstreamChangeSets { get; }
+        //[JsonIgnore]
         public FileState State
         {
             get
             {
                 if(_state == null)
                 {
-                    _state = EvaluateState();
+                    EvaluateState();
                 }
                 return _state;
             }
+            internal set { _state = value; }
         }
+        [JsonIgnore]
         public RvcVersion RootVersion { get => UpstreamChangeSet == null ? this : UpstreamChangeSet.VersionBefore.RootVersion; }
         #endregion
 
@@ -84,13 +87,11 @@ namespace RvcCore.VersionManagement
         /// and caches it in the State property.
         /// </summary>
         /// <returns></returns>
-        public FileState EvaluateState()
+        public void EvaluateState()
         {
-            FileState state;
             //FileState prevState = 
-            state = UpstreamChangeSet?.VersionBefore?.State.ApplyChangeSet(UpstreamChangeSet) ?? new FileState() ;
-            state.Version = this;
-            return state;
+            _state = UpstreamChangeSet?.VersionBefore?.State.ApplyChangeSet(UpstreamChangeSet) ?? new FileState() ;
+            _state.Version = this;
         }
 
         public override object Clone()
@@ -111,17 +112,36 @@ namespace RvcCore.VersionManagement
             }
             return version;
         }
+
+
+
         public static RvcVersion ReadRootVersion(string archiveDir)
         {
             string historyPath = Path.Combine(archiveDir, RvcArchive.HistoryFileName);
             RvcVersion rootVersion = null;
-            using(StreamReader reader = new StreamReader(historyPath))
+            JsonSerializer serializer = new JsonSerializer();
+            serializer.TypeNameHandling = TypeNameHandling.Objects;
+            serializer.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+            using (StreamReader reader = new StreamReader(historyPath))
             {
-                rootVersion = JsonConvert.DeserializeObject<RvcVersion>(reader.ReadToEnd());
+                string jsonStr = reader.ReadToEnd();
+                rootVersion = (RvcVersion)serializer.Deserialize(reader, typeof(RvcVersion));
             }
 
             return rootVersion;
         }
+        public static void WriteRootVersion(RvcVersion version, string archiveDir)
+        {
+            string historyPath = Path.Combine(archiveDir, RvcArchive.HistoryFileName);
+            JsonSerializer serializer = new JsonSerializer();
+            serializer.TypeNameHandling = TypeNameHandling.Objects;
+            serializer.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+            using (StreamWriter writer = new StreamWriter(historyPath))
+            {
+                serializer.Serialize(writer, version);
+            }
+        }
+
         #endregion
     }
 }

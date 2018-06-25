@@ -10,7 +10,7 @@ namespace RvcCore
     {
         Guid Id { get; set; }
     }
-
+    [Serializable]
     public abstract class Entity: IEntity
     {
         public Guid Id { get; set; }
