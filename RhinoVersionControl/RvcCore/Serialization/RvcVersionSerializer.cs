@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using RvcCore.VersionManagement;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace RvcCore.Serialization
 {
@@ -24,6 +25,20 @@ namespace RvcCore.Serialization
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
+            RvcVersion version = (RvcVersion)value;
+
+            writer.WriteStartObject();
+            //writing the id of the version
+            writer.WritePropertyName(Entity.ID_PROP_NAME);
+            writer.WriteValue(version.Id);
+
+            writer.WritePropertyName(RvcVersion.DOWNSTREAM_PROP_NAME);
+            writer.WriteStartObject();
+            foreach(var changeSet in version.DownstreamChangeSets.Keys)
+            {
+                
+            }
+            writer.WriteEndObject();
             //incomplete
             throw new NotImplementedException();
         }

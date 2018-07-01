@@ -14,6 +14,7 @@ namespace RvcCore.VersionManagement
     public class RvcVersion: Entity, IEquatable<RvcVersion>
     {
         #region fields
+        internal static string DOWNSTREAM_PROP_NAME = "ds";
         private FileState _state = null;
         private static Dictionary<Guid, RvcVersion> _versionDict = new Dictionary<Guid, RvcVersion>();
         #endregion
@@ -125,17 +126,18 @@ namespace RvcCore.VersionManagement
             using (StreamReader reader = new StreamReader(historyPath))
             {
                 string jsonStr = reader.ReadToEnd();
-                rootVersion = (RvcVersion)serializer.Deserialize(reader, typeof(RvcVersion));
+                rootVersion = JsonConvert.DeserializeObject<RvcVersion>(jsonStr);
             }
 
             return rootVersion;
         }
-        public static void WriteRootVersion(RvcVersion version, string archiveDir)
+        public static void WriteVersionHistory(RvcVersion version, string archiveDir)
         {
             string historyPath = Path.Combine(archiveDir, RvcArchive.HistoryFileName);
             JsonSerializer serializer = new JsonSerializer();
             serializer.TypeNameHandling = TypeNameHandling.Objects;
             serializer.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+            serializer.Formatting = Formatting.Indented;
             using (StreamWriter writer = new StreamWriter(historyPath))
             {
                 serializer.Serialize(writer, version);

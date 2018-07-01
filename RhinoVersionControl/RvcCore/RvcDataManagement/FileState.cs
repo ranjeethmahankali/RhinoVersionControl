@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using Newtonsoft.Json;
 using RvcCore.VersionManagement;
 using Rhino.DocObjects;
 
@@ -19,7 +20,9 @@ namespace RvcCore.RvcDataManagement
         #endregion
 
         #region properties
+        [JsonIgnore]
         public DataStore Store { get; internal set; }
+        [JsonIgnore]
         public RvcVersion Version { get; set; }
         #endregion
 

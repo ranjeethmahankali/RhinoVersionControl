@@ -4,21 +4,25 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 using Rhino.FileIO;
 using Rhino.DocObjects;
 
 namespace RvcCore.VersionManagement
 {
+    [JsonConverter(typeof(Serialization.ChangeSetSerializer))]
     public class ChangeSet: Entity
     {
         #region fields
+        internal static string CHANGES_PROP = "changes";
         private Dictionary<Guid, IChange> _changeDict = null;
         #endregion
 
         #region properties
         public RvcVersion VersionBefore { get; internal set; }
         public RvcVersion VersionAfter { get; internal set; }
+        //[JsonProperty("changes")]
         public Dictionary<Guid, IChange> ChangesMap
         {
             get

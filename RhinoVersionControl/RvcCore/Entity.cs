@@ -13,6 +13,7 @@ namespace RvcCore
     [Serializable]
     public abstract class Entity: IEntity
     {
+        internal static string ID_PROP_NAME = "id";
         public Guid Id { get; set; }
         public abstract object Clone();
         internal Entity()

@@ -113,8 +113,8 @@ namespace RvcCore.Util
             }
             rootVersion.State = state;
             string dirPath = Path.GetDirectoryName(filePath);
-            //RvcVersion.WriteRootVersion(rootVersion, Path.Combine(dirPath, RvcRhinoFileTether.RvcArchiveDirectoryName, tether.RvcId.ToString()));
-            //file.Write(filePath, 0);
+            RvcVersion.WriteVersionHistory(rootVersion, Path.Combine(dirPath, RvcRhinoFileTether.RvcArchiveDirectoryName, tether.RvcId.ToString()));
+            file.Write(filePath, 0);
             return tether;
         }
 
