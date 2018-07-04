@@ -16,7 +16,7 @@ namespace RvcCore.RvcDataManagement
     public class FileState: Entity
     {
         #region fields
-        private HashSet<IFileDataTable> _tables { get; }
+        private HashSet<IFileDataTable> _tables;
         #endregion
 
         #region properties
@@ -24,6 +24,15 @@ namespace RvcCore.RvcDataManagement
         public DataStore Store { get; internal set; }
         [JsonIgnore]
         public RvcVersion Version { get; set; }
+        internal HashSet<IFileDataTable> Tables
+        {
+            get
+            {
+                if(_tables == null) { _tables = new HashSet<IFileDataTable>(); }
+                return _tables;
+            }
+            set => _tables = value;
+        }
         #endregion
 
         #region constructors
